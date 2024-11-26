@@ -1,7 +1,3 @@
-# Created by Hugo Nolte for course PA1414 - DoBot Magician Project
-# 2019
-
-import threading
 from Dobot import DoBotArm
 
 #Example of bundling functions
@@ -59,8 +55,7 @@ def autoMode():
     # dobot.pick(0)
 #--Main Program--
 def main():
-    # manualMode()
-
-    autoMode()
+    manualMode()
+    # autoMode()
 
 main()
