@@ -2,8 +2,7 @@ from Dobot import DoBotArm
 
 #Example of bundling functions
 def functions():
-    homeX, homeY, homeZ = 250, 0, 50
-    dobot = DoBotArm(homeX, homeY, homeZ) #Create DoBot Class Object with home position x,y,z
+    dobot = DoBotArm(250, 0, 50) #Create DoBot Class Object with home position x,y,z
     dobot.moveArmXY(250, 100)
     dobot.pickToggle(-40)
     dobot.toggleSuction()
@@ -14,10 +13,11 @@ def functions():
     dobot.pickToggle(-40)
 
 def manualMode():
-    homeX, homeY, homeZ = 250, 0, 50
-    dobot = DoBotArm(homeX, homeY, homeZ) #Create DoBot Class Object with home position x,y,z
+    dobot = DoBotArm(250, 0, 50) #Create DoBot Class Object with home position x,y,z
+    dobot.moveHome()
+    dobot.goPick((250, 50, -30), (150, 100, -30))
     print("1- Go Home (250, 0, 50)")
-    print("2- Move X,Y")
+    print("2- Move X,Y,Z")
     print("3- pick")
     print("4- Grip")
     print("5- toggles suction")
@@ -29,7 +29,8 @@ def manualMode():
         elif(option == 2):
             x = int(input("X: "))
             y = int(input("Y: "))
-            dobot.moveArmXY(x,y)
+            z = int(input("Z: "))
+            dobot.moveArm(x,y,z)
         elif(option == 3):
             height = int(input("height: "))
             dobot.pickToggle(height)

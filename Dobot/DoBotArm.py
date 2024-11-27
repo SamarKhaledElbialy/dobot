@@ -20,14 +20,12 @@ CON_STR = {
 
 #Main control class for the DoBot Magician.
 class DoBotArm:
-    def __init__(self, homeX, homeY, homeZ):
+    def __init__(self, x=250, y=0, z=50):
         self.suction = False
         self.picking = False
         self.griping = False
         self.api = dType.load()
-        self.homeX = homeX
-        self.homeY = homeY
-        self.homeZ = homeZ
+        self.home = (x, y, z)
         self.connected = False
         self.dobotConnect()
 
@@ -59,7 +57,7 @@ class DoBotArm:
                 print("Connect status:",CON_STR[state])
                 dType.SetQueuedCmdClear(self.api)
 
-                dType.SetHOMEParams(self.api, self.homeX, self.homeY, self.homeZ, 0, isQueued = 1)
+                dType.SetHOMEParams(self.api, self.home[0], self.home[1], self.home[2], 0, isQueued = 1)
                 dType.SetPTPJointParams(self.api, 200, 200, 200, 200, 200, 200, 200, 200, isQueued = 1)
                 dType.SetPTPCommonParams(self.api, 100, 100, isQueued = 1)
 
@@ -79,27 +77,34 @@ class DoBotArm:
         while cmdIndex > dType.GetQueuedCmdCurrentIndex(self.api)[0]:
             dType.dSleep(200)
         dType.SetQueuedCmdStopExec(self.api)
-
+#============================================================================
+    #Moves arm to X/Y/Z Location
+    def moveArm(self, x=None, y=None, z=None):
+        currPos = dType.GetPose(self.api)
+        x = currPos[0] if x is None else x
+        y = currPos[1] if y is None else y
+        z = currPos[2] if z is None else z
+        lastIndex = dType.SetPTPCmd(self.api, dType.PTPMode.PTPMOVLXYZMode, x, y, z, 1)[0]
+        self.waitCommand(lastIndex)
+#============================================================================
     #Moves arm to X/Y/Z Location
     def moveArmXY(self,x,y):
-        lastIndex = dType.SetPTPCmd(self.api, dType.PTPMode.PTPMOVLXYZMode, x, y, self.homeZ, 1)[0]
+        lastIndex = dType.SetPTPCmd(self.api, dType.PTPMode.PTPMOVLXYZMode, x, y, self.home[2], 1)[0]
         self.waitCommand(lastIndex)
-
+#============================================================================
     #Returns to home location
     def moveHome(self):
-        lastIndex = dType.SetPTPCmd(self.api, dType.PTPMode.PTPMOVLXYZMode, self.homeX, self.homeY, self.homeZ, 0)[0]
+        lastIndex = dType.SetPTPCmd(self.api, dType.PTPMode.PTPMOVLXYZMode, self.home[0], self.home[1], self.home[2], 0)[0]
         self.waitCommand(lastIndex)
 #============================================================================
     def goPick(self, source, dest):
-        self.setGrip(False)
-        self.moveArmXY(source[0], source[1])
-        self.pick(source[2])
-        self.setGrip(True)
-        self.pick(0)
-        self.moveArmXY(dest[0], dest[1])
-        self.pick(dest[2])
-        self.setGrip(False)
-        self.pick(0)
+        self.setGrip(False)         #open
+        self.moveArm(x=source[0], y=source[1], z=source[2])
+        self.setGrip(True)          #close 
+        self.moveArm(z=0)           #go down
+        self.moveArm(x=dest[0], y=dest[1], z=dest[2])
+        self.setGrip(False)         
+        self.moveArm(z=0)
 #============================================================================
     def pick(self, itemHeight):
         positions = dType.GetPose(self.api)
